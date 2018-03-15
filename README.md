@@ -1,4 +1,4 @@
-# lib-mp3
+# lib-audio-mp3
 
 Suite of modules for low-level handling of MP3 frames.
 
