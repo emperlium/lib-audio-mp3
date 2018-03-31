@@ -63,6 +63,18 @@ our @TEST_HEADERS = (
         'header' => {'bitrate',64,'bitrate_index',8,'copyright',0,'emphasis',0,'frame_length',192,'id',0,'layer',3,'mode',1,'mode_extension',2,'original',1,'padding_bit',0,'private_bit',0,'protection_bit',1,'sample_rate',24000,'sampling_freq',1,'stereo',1,'version_id',2},
         'br_header_type' => '',
         'Info' => undef
+    }, {
+        'file' => 'empty_lame_xing.mp3',
+        'data' => decode_base64("//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAABAAACCQD/////////////////////////\n////////////////////////////////////////////////////////////////////////////\n//////////////////////////////8AAABQTEFNRTMuOTlyBLkAAAAAAAAAADUgJAJAQQAB4AAA\nAgkvcddgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAA\n"),
+        'header' => {'bitrate',128,'bitrate_index',9,'copyright',0,'emphasis',0,'frame_length',417,'id',1,'layer',3,'mode',3,'mode_extension',0,'original',1,'padding_bit',0,'private_bit',0,'protection_bit',1,'sample_rate',44100,'sampling_freq',0,'stereo',0,'version_id',1},
+        'lame' => {'encoder_delays',[576,576],'peak_signal_amplitude','0','peak_signal_amplitude_offset',152,'tag_crc',55136,'tag_crc_offset',175,'tag_version',0,'tag_version_offset',150,'vbr_method',4,'vbr_method_offset',150,'version','3.99r','version_offset',145},
+        'br_header_type' => 'Xing',
+        'Xing' => {'bytes',521,'bytes_offset',33,'frames',1,'frames_offset',29,'scale',80,'scale_offset',137,'toc',[16777215,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295,4294967295],'toc_offset',37}
+    }, {
+        'file' => 'empty_lame_noxing.mp3',
+        'data' => decode_base64("//uQxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAA\n"),
+        'header' => {'bitrate',128,'bitrate_index',9,'copyright',0,'emphasis',0,'frame_length',417,'id',1,'layer',3,'mode',3,'mode_extension',0,'original',1,'padding_bit',0,'private_bit',0,'protection_bit',1,'sample_rate',44100,'sampling_freq',0,'stereo',0,'version_id',1},
+        'br_header_type' => ''
     }
 );
 
