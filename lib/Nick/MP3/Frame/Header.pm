@@ -15,6 +15,7 @@ our(
 BEGIN {
     @EXPORT = qw(
         parse header $FRAME_LENGTH $LAYER $VERSION_ID $BITRATE $SAMPLE_RATE
+        @BITRATES @SAMPLE_RATES
     );
     @BITRATES = (
         [ #MPEG2
