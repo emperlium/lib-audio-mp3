@@ -14,7 +14,7 @@ our @EXPORT = qw(
 our $TEST_APPLIED_GAIN = 1;
 
 our @TEST_GAIN_FILES = (
-    # /data/samples/cork.wav
+    # /ssd/samples/cork.wav
     {
         # -V 2,
         'header' => {'version_id',1,'layer',3,'mode',1,'protection_bit',1,'stereo',1},

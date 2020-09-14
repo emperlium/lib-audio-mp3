@@ -12,11 +12,18 @@ use Nick::MP3::Frame qw(
     $FRAME_LENGTH $BLOCK_SIZE
 );
 
-our( @EXPORT_OK, $POS, $CONSUME_BR_HEADER );
+our(
+    @EXPORT_OK, $POS, $CONSUME_BR_HEADER,
+    $FIRST_FRAME_TRIES, $FIRST_FRAMES_SAME
+);
 
 BEGIN {
-    @EXPORT_OK = qw( $CONSUME_BR_HEADER );
+    @EXPORT_OK = qw(
+        $CONSUME_BR_HEADER $FIRST_FRAME_TRIES $FIRST_FRAMES_SAME
+    );
     $CONSUME_BR_HEADER = 1;
+    $FIRST_FRAME_TRIES = 6;
+    $FIRST_FRAMES_SAME = 3;
 }
 
 sub new {
@@ -31,14 +38,9 @@ sub new {
     } else {
         binmode $$self{'handle'}
     }
-    $$self{'first_frame'} = $self -> get_frame()
-        or $self -> throw(
-            'Unable to get first frame'
-        );
-    $$self{'first_header'} = header();
+    $self -> _find_first_frame();
     ( $$self{'bitrate_header'} = find_bitrate_type(
-            $$self{'first_frame'},
-            $$self{'first_header'}
+            @$self{ qw( first_frame first_header ) }
         )
     ) && $CONSUME_BR_HEADER
         or substr(
@@ -277,6 +279,42 @@ sub sync_new_position {
 
 sub close {
     return close( $_[0]{'handle'} );
+}
+
+sub _find_first_frame {
+    my( $self ) = @_;
+    my $good_frames = 0;
+    my $last_id = '';
+    my( $fh, $data ) = @$self{ qw( handle data ) };
+    my( $frame, $header, $got_frames, $this_id, $buffer, $byte_pos );
+    while ( $good_frames < $FIRST_FRAMES_SAME ) {
+        $got_frames ++;
+        $frame = $self -> get_frame()
+            or $self -> throw(
+                'Unable to get first frame'
+            );
+        $header = header();
+        $this_id = join ' ', @$header{
+            qw( version_id layer sample_rate stereo )
+        };
+        if ( $this_id eq $last_id ) {
+            $good_frames ++;
+        } else {
+            $good_frames = 1;
+            @$self{ qw( first_frame first_header ) } = ( $frame, $header );
+            $buffer = $$data;
+            $byte_pos = tell $fh;
+        }
+        $got_frames < $FIRST_FRAME_TRIES
+            or $self -> throw(
+                "Unable to get first frame after $got_frames tries"
+            );
+        $last_id = $this_id;
+    }
+    if ( $good_frames > 1 ) {
+        $$data = $buffer;
+        seek $fh, $byte_pos, 0;
+    }
 }
 
 1;
