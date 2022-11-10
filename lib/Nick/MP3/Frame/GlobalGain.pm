@@ -94,6 +94,7 @@ sub apply_gain {
     $crc_flag or substr(
         $_[0], 4, 2
     ) = frame_crc( $_[0] );
+    return $bit_skip >> 3;
 }
 
 1;
