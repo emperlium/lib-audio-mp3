@@ -5,19 +5,20 @@ use Test::More;
 use IO::String;
 
 use lib 't/lib';
-use Nick::MP3::Test::Files '@TEST_FILES';
 
-our $FRAME_LENGTH;
+our( $FRAME_LENGTH, @FILES );
 
 BEGIN {
-    plan tests => 2 + ( @TEST_FILES * 5 );
+    use Nick::MP3::Test::Files '@TEST_FILES';
+    @FILES = grep $$_{'file'} ne 'The Third Policeman.mp3', @TEST_FILES;
+    plan tests => 2 + ( @FILES * 5 );
     use_ok 'Nick::MP3::Frame' => qw(
         find_frame header frame_time frame_samples
         find_bitrate_type count_frames $FRAME_LENGTH
     );
 }
 
-for my $test ( @TEST_FILES ) {
+for my $test ( @FILES ) {
     my $data = $$test{'data'};
     my( $pos, $head, @frames );
     note( $$test{'file'} );
