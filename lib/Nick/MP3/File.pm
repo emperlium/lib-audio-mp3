@@ -277,7 +277,7 @@ sub _init {
         = $$self{'stream'}
         = Nick::MP3::Stream -> new( $fh );
     $$self{'total_bytes'} = -s $file;
-    my $vbr = 0;
+    my $vbr = $stream -> is_vbr();
     my( $br_header, $size, $frames, $onset );
     my $offset = $stream -> position();
     if (
@@ -286,8 +286,6 @@ sub _init {
         $$self{'header_frame'} = $stream -> first_frame();
         $br_header -> frames_offset()
             and $frames = $br_header -> frames();
-        $br_header -> type() eq 'Xing'
-            and $vbr = 1;
         if (
             $br_header -> bytes_offset()
         ) {

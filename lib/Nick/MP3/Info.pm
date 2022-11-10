@@ -21,14 +21,16 @@ use Nick::MP3::SkipID3v2 'skip_id3v2';
 our(
     @EXPORT_OK, $AUTOLOAD,
     @ID_FIELDS, %METHOD_OBJECTS, $TMP,
-    $EXCLUDE_HEADER_FRAME
+    $EXCLUDE_HEADER_FRAME, $VBR_CHECK_IGNORE_LOW_COUNT
 );
 
 BEGIN {
     @ID_FIELDS = qw(
         id layer mode sample_rate stereo version_id
     );
-    @EXPORT_OK = qw( @ID_FIELDS $EXCLUDE_HEADER_FRAME );
+    @EXPORT_OK = qw(
+        @ID_FIELDS $EXCLUDE_HEADER_FRAME $VBR_CHECK_IGNORE_LOW_COUNT
+    );
     for ( qw(
         bitrate frame_length layer sample_rate stereo version_id
     ) ) {
@@ -46,6 +48,7 @@ BEGIN {
     }
     $EXCLUDE_HEADER_FRAME = 1;
     $CONSUME_BR_HEADER = 1;
+    $VBR_CHECK_IGNORE_LOW_COUNT = 1;
 }
 
 sub new {
@@ -196,7 +199,7 @@ sub is_vbr {
             $_[1] && $_[0] -> _check_frames()
         )
         ? $_[0]{'vbr'}
-        : $_[0] -> bitrate_header_type() eq 'Xing' ? 1 : 0
+        : $_[0]{'stream'} -> is_vbr()
     );
 }
 
@@ -361,6 +364,12 @@ sub _check_frames {
                 }
             }
             last;
+        }
+    }
+    if ( $VBR_CHECK_IGNORE_LOW_COUNT ) {
+        for ( keys %bitrates ) {
+            $bitrates{$_} <= $VBR_CHECK_IGNORE_LOW_COUNT
+                and delete $bitrates{$_};
         }
     }
     seek( $fh, $orig_pos, 0 );

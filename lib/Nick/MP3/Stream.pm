@@ -19,7 +19,8 @@ our(
 
 BEGIN {
     @EXPORT_OK = qw(
-        $CONSUME_BR_HEADER $FIRST_FRAME_TRIES $FIRST_FRAMES_SAME
+        $CONSUME_BR_HEADER
+        $FIRST_FRAME_TRIES $FIRST_FRAMES_SAME
     );
     $CONSUME_BR_HEADER = 1;
     $FIRST_FRAME_TRIES = 6;
@@ -180,6 +181,10 @@ sub position {
     );
 }
 
+sub is_vbr {
+    return $_[0]{'vbr'};
+}
+
 sub vbr_header {
     return(
         $_[0]{'bitrate_header'}
@@ -277,6 +282,7 @@ sub close {
 sub _find_first_frame {
     my( $self ) = @_;
     my $good_frames = 0;
+    my $first_frame = 0;
     my $last_id = '';
     my( $fh, $data ) = @$self{ qw( handle data ) };
     my(
@@ -285,7 +291,10 @@ sub _find_first_frame {
     );
     my @fields = qw( version_id layer sample_rate stereo );
     while ( $good_frames < $FIRST_FRAMES_SAME ) {
-        $got_frames ++;
+        ++$got_frames > $FIRST_FRAME_TRIES
+            and $self -> throw(
+                "Unable to get first frame after $FIRST_FRAME_TRIES tries"
+            );
         $frame = $self -> get_frame()
             or $self -> throw(
                 'Unable to get first frame'
@@ -304,24 +313,35 @@ sub _find_first_frame {
         $this_id = join ' ', @$header{ @fields };
         if ( $this_id eq $last_id ) {
             $good_frames ++;
+            unless ( $buffer ) {
+                $buffer = $frame . $$data;
+                $byte_pos = tell $fh;
+            }
         } else {
             $good_frames = 1;
             $first_frame = $got_frames;
             @$self{ qw( first_frame first_header ) } = ( $frame, $header );
-            $buffer = $$data;
-            $byte_pos = tell $fh;
+            unless (
+                $got_frames == 1 && $br_header && $CONSUME_BR_HEADER
+            ) {
+                $buffer = $frame . $$data;
+                $byte_pos = tell $fh;
+            }
+            %brs = ();
         }
-        $got_frames < $FIRST_FRAME_TRIES
-            or $self -> throw(
-                "Unable to get first frame after $got_frames tries"
-            );
+        $guess_vbr and $brs{ $$header{'bitrate'} }++;
         $last_id = $this_id;
     }
     $$self{'bitrate_header'} = $br_header;
-    if ( $good_frames > 1 ) {
+    if ( $buffer ) {
         $$data = $buffer;
         seek $fh, $byte_pos, 0;
     }
+    $$self{'vbr'} = (
+        $guess_vbr
+        ? keys( %brs ) > 1
+        : $vbr
+    ) || 0;
 }
 
 1;
