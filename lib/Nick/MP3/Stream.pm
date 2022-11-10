@@ -39,13 +39,6 @@ sub new {
         binmode $$self{'handle'}
     }
     $self -> _find_first_frame();
-    ( $$self{'bitrate_header'} = find_bitrate_type(
-            @$self{ qw( first_frame first_header ) }
-        )
-    ) && $CONSUME_BR_HEADER
-        or substr(
-            ${ $$self{'data'} }, 0, 0
-        ) = $$self{'first_frame'};
     return $self;
 }
 
@@ -286,7 +279,11 @@ sub _find_first_frame {
     my $good_frames = 0;
     my $last_id = '';
     my( $fh, $data ) = @$self{ qw( handle data ) };
-    my( $frame, $header, $got_frames, $this_id, $buffer, $byte_pos );
+    my(
+        $frame, $header, $got_frames, $this_id, $buffer, $byte_pos,
+        $br_header, $vbr, $guess_vbr, %brs
+    );
+    my @fields = qw( version_id layer sample_rate stereo );
     while ( $good_frames < $FIRST_FRAMES_SAME ) {
         $got_frames ++;
         $frame = $self -> get_frame()
@@ -294,13 +291,22 @@ sub _find_first_frame {
                 'Unable to get first frame'
             );
         $header = header();
-        $this_id = join ' ', @$header{
-            qw( version_id layer sample_rate stereo )
-        };
+        if ( $got_frames == 1 ) {
+            if (
+                $br_header = find_bitrate_type( $frame, $header )
+            ) {
+                ( $vbr = $br_header -> type() eq 'Xing' )
+                    or push @fields => 'bitrate';
+            } else {
+                $guess_vbr = 1;
+            }
+        }
+        $this_id = join ' ', @$header{ @fields };
         if ( $this_id eq $last_id ) {
             $good_frames ++;
         } else {
             $good_frames = 1;
+            $first_frame = $got_frames;
             @$self{ qw( first_frame first_header ) } = ( $frame, $header );
             $buffer = $$data;
             $byte_pos = tell $fh;
@@ -311,6 +317,7 @@ sub _find_first_frame {
             );
         $last_id = $this_id;
     }
+    $$self{'bitrate_header'} = $br_header;
     if ( $good_frames > 1 ) {
         $$data = $buffer;
         seek $fh, $byte_pos, 0;
