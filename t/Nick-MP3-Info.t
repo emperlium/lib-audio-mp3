@@ -92,7 +92,7 @@ foreach my $test ( @TEST_FILES ) {
     );
     is(
         $info -> is_vbr(),
-        $br_type eq 'Xing' ? 1 : 0,
+        $$test{'vbr'},
         'is_vbr'
     );
     is(
